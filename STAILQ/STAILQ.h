@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <sys/queue.h>
 #include <pthread.h>
+#include <stdlib.h>
 
 typedef struct listEntryStruc    LIST_ENTRY_T;
 
