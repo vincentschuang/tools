@@ -23,6 +23,7 @@ typedef struct taskQueue taskQueue_T;
 struct taskQueue{
 	int 				  tasks;
 	pthread_mutex_t       mutex;
+	pthread_cond_t 		  workAvailable;
 	INIT_LIST_HEAD_T	  list_head;
 };
 

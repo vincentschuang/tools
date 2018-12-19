@@ -6,7 +6,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
+#include <assert.h>
 #include "http.h"
 
 
@@ -199,27 +199,28 @@ void* httpHandler(void * data){
 
 	while(1){
 		pthread_mutex_lock(&taskQueue->mutex);	
-		if(taskQueue->tasks > 0){
-			//free entry then
 
-			task = (LIST_ENTRY_T *)malloc(sizeof(*task));
-			if (task == NULL){
-				printf("Malloc Task fail\n");
-				pthread_mutex_unlock(&taskQueue->mutex);
-				pthread_exit(NULL);
-			}
-			
-			task = STAILQ_FIRST(&taskQueue->list_head);
-			newfd = task->newfd;
-			STAILQ_REMOVE_HEAD(&taskQueue->list_head, next);
-			free(task);
-			taskQueue->tasks--;
-			pthread_mutex_unlock(&taskQueue->mutex);
+		while (taskQueue->tasks == 0) {
+            pthread_cond_wait(&taskQueue->workAvailable, &taskQueue->mutex);
+        }
 
-			handleRequest(newfd);	
-		}else{
+		assert(taskQueue->tasks > 0);
+
+		task = (LIST_ENTRY_T *)malloc(sizeof(*task));
+		if (task == NULL){
+			printf("Malloc Task fail\n");
 			pthread_mutex_unlock(&taskQueue->mutex);
-			usleep(WAITING_TIME);
+			pthread_exit(NULL);
 		}
+		
+		task = STAILQ_FIRST(&taskQueue->list_head);
+		newfd = task->newfd;
+		STAILQ_REMOVE_HEAD(&taskQueue->list_head, next);
+		free(task);
+		taskQueue->tasks--;
+		pthread_mutex_unlock(&taskQueue->mutex);
+
+		handleRequest(newfd);	
+		
 	}
 }

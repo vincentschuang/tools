@@ -32,6 +32,11 @@ pthread_t * initThreadPool(taskQueue_T * taskQueue){
 }
 
 void addTask(taskQueue_T* taskQueue, int newsockfd){
+	pthread_mutex_lock(&taskQueue->mutex);
+
+	if(taskQueue->tasks == 0){
+		pthread_cond_broadcast(&taskQueue->workAvailable);
+	}
 
 	LIST_ENTRY_T * newEntry = (LIST_ENTRY_T*)malloc(sizeof(*newEntry));
 
@@ -41,7 +46,6 @@ void addTask(taskQueue_T* taskQueue, int newsockfd){
 	}
 
 	newEntry->newfd = newsockfd;
-	pthread_mutex_lock(&taskQueue->mutex);
 
 	STAILQ_INSERT_TAIL(&taskQueue->list_head, newEntry, next);
 	taskQueue->tasks++;
@@ -66,6 +70,7 @@ int main()
  	taskQueue_T taskQueue = {
  		.tasks = 0,
 		.mutex = PTHREAD_MUTEX_INITIALIZER,
+		.workAvailable = PTHREAD_COND_INITIALIZER,
 		.list_head = STAILQ_HEAD_INITIALIZER(taskQueue.list_head),
  	};
 
