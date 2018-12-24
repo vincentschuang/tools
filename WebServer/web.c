@@ -12,6 +12,8 @@
 #include <netinet/in.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+
+#include "add_openssl.h"
 #include "web.h"
 #include "http.h"
 
@@ -53,11 +55,32 @@ void addTask(taskQueue_T* taskQueue, int newsockfd){
 	pthread_mutex_unlock(&taskQueue->mutex);
 }
 
+#ifdef USE_OPENSSL
+	SSL_CTX *ctx;
+#endif
+
+//global valuable
+GVALUE_T gValue={
+	.suppress={
+		.nextAccessTime = "20181225103025",
+		.todayValue = 0,
+		.monthValue = 0,
+	}
+};
+
 int main()
 {
 	int fd = 0;
 
-	fd = TcpSocketCreate();
+#ifdef USE_OPENSSL
+    init_openssl();
+    ctx = create_context();
+    configure_context(ctx);
+#endif
+
+
+    fd = TcpSocketCreate();
+
  	if(fd < 0){
  		printf("Close Server\n");
  		return 0;
@@ -96,6 +119,10 @@ int main()
  	//finish
 
  	close(fd);
+#ifdef USE_OPENSSL 	
+ 	SSL_CTX_free(ctx);
+    cleanup_openssl();
+#endif    
  	printf("Server Left\n");
  return 0;
 
