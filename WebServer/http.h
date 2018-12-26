@@ -57,7 +57,7 @@ static const char jetPayloadHeader[] = ""
         "\r\n";
 
 static const char jetPayloadTail[] = ""
-        "\r\n--BOUNDARY--\r\n";
+        "\r\n--BOUNDARY--";
 
 void* httpHandler(void * data);
 char * getMethod(char * buff, int *position);

@@ -138,16 +138,17 @@ void SendJetResponsePacket(char*fileFullPath, char*fileName, char* headBuffer,ch
 
 void postHandler(httpRequest_T * httpRequest){
 	printf("\n\n\n~~~~~~~~~~~postHandler~~~~~~~~~\n");
-	/*
+	
 	printf("%s\n", httpRequest->action);
 	printf("%d\n", httpRequest->contentLength);
 	printf("%s\n", httpRequest->payload);
-	*/
+	
 	char headBuffer[512],payloadBuffer[2048];
 	memset(headBuffer,0,512);
 	memset(payloadBuffer,0,2048);
 
-	if(!strcmp(httpRequest->action,"/scheduleSend")){
+
+	if(!strncmp(httpRequest->action,"/scheduleSend",13)){
 		printf("scheduleSend\n" );
 		char  plantID[27],  mac[13], schedule_kbn[5];
 

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Delta Power</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<!--[if lt IE 9]>
+		<script src="/js/html5.js">
+		</script>
+		<![endif]-->
+		<script src="/js/jquery.min.js"></script>	
+	</head>
+	<body>
+		<div id="wrap">
+			<header>
+				<div id="head">
+					<h1>Configure Suppress Value</h1>
+					<p></p>
+				</div>
+				
+			</header>
+			<hr>
+			<html>
+				<h1>Config</h1>
+				<form action="/scheduleConfig" method="post" >
+					Month Value: <input type="text" name="monthValue" value="100" size="10"><br>
+					Today Value: <input type="text" name="todayValue" value="50" size="50"><br>
+					Next Access Time: <input type="text" name="nextAccessTime" id="nextAccessTime" value="" size="15"><br>
+					<input type="submit" value="Submit">
+				</form>
+
+				<!--h1>Register</h1>
+				<form action="/scheduleSend" method="post" >
+					power_plant_id: <input type="text" name="power_plant_id" value="09086660000001000000010010" size="35"><br>
+					mac_address: <input type="text" name="mac_address" value="FC6947A53D33" size="13"><br>
+					schedule_kbn: <input type="text" name="schedule_kbn" value="8888" size="5"><br>
+					<input type="submit" value="Submit">
+				</form>
+				<h1>Day</h1>
+				<form action="/scheduleSend" method="post" >
+					power_plant_id: <input type="text" name="power_plant_id" value="09086660000001000000010010" size="35"><br>
+					mac_address: <input type="text" name="mac_address" value="FC6947A53D33" size="13"><br>
+					schedule_kbn: <input type="text" name="schedule_kbn" value="0000" size="5"><br>
+					<input type="submit" value="Submit">
+				</form>
+				<h1>YearMonth</h1>
+				<form action="/scheduleSend" method="post" >
+					power_plant_id: <input type="text" name="power_plant_id" value="09086660000001000000010010" size="35"><br>
+					mac_address: <input type="text" name="mac_address" value="FC6947A53D33" size="13"><br>
+					schedule_kbn: <input type="text" name="schedule_kbn" value="1812" size="5"><br>
+					<input type="submit" value="Submit">
+				</form-->
+			</html>
+
+			<div id="body_main">
+				<script>
+				var d = new Date();
+  				var year = d.getFullYear();
+  				var month = d.getMonth()+1;
+  				var ndate = d.getDate();
+  				var hour = d.getHours()+1;
+
+  				month = (month>9?month:"0"+month);
+  				ndate = (ndate>9?ndate:"0"+ndate);
+  				hour = (hour>9?hour:"0"+hour);
+
+  				var time_str = year.toString() + month.toString() + ndate.toString() + hour.toString() + "3000";
+
+  				document.getElementById('nextAccessTime').value = time_str;
+
+  				console.log(time_str);
+					
+				</script>
+				<div style="clear:both;"></div>
+			</div>	<!-- end of div main -->
+		</div>
+	</body>
+</html>
+
