@@ -37,8 +37,8 @@ struct taskQueue{
 
 //global valuable
 struct suppress {
-	char nextAccessTime[14];
-	char todayValue[1];
+	char nextAccessTime[15];
+	char todayValue[48];
 	char monthValue[1];
 };
 typedef struct suppress SUPPRESS_T;

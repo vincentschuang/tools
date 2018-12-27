@@ -7,10 +7,20 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <assert.h>
+#include <unistd.h>
+
+#include <time.h>
 #include "http.h"
 #include "parsebinary.h"
 #include "add_openssl.h"
+#include "http_jet.h"
 
+void freadFileToBuffer(char * file, char *buffer, int num ){
+	FILE *fp;
+    fp = fopen (file, "r");
+    fread(buffer,sizeof(char),num,fp);
+    fclose(fp);
+}
 
 char * getMethod(char * buff, int * position){
 	char * ptr = NULL;
@@ -70,6 +80,7 @@ fileType_T extensions [] = {
     {"js", "text/javascript;"},
     {"htm", "text/html" },
     {"html","text/html" },
+    {"json","application/json"},
     {"css","text/css" },
     {"exe","text/plain" },
     {"gif", "image/gif" },
@@ -136,6 +147,16 @@ void SendJetResponsePacket(char*fileFullPath, char*fileName, char* headBuffer,ch
 
 }
 
+void send404(httpRequest_T * httpRequest){
+#ifdef USE_OPENSSL	
+		SSL_write(httpRequest->ssl, response404, strlen(response404));
+		SSL_free(httpRequest->ssl);
+#else
+		write(httpRequest->newfd, response404, strlen(response404));
+#endif
+	close(httpRequest->newfd);
+}
+
 void postHandler(httpRequest_T * httpRequest){
 	printf("\n\n\n~~~~~~~~~~~postHandler~~~~~~~~~\n");
 	
@@ -143,91 +164,28 @@ void postHandler(httpRequest_T * httpRequest){
 	printf("%d\n", httpRequest->contentLength);
 	printf("%s\n", httpRequest->payload);
 	
-	char headBuffer[512],payloadBuffer[2048];
-	memset(headBuffer,0,512);
-	memset(payloadBuffer,0,2048);
+//array of function pointer
+	postFunction_T postFunctions[]={
+		{"/scheduleSend", 13, scheduleSend},
+		{"/scheduleConfig", 15, scheduleConfig},
+		{"/getScheduleConfig", 18, getScheduleConfig},
+		{"0", 0, NULL}
+	};
 
-
-	if(!strncmp(httpRequest->action,"/scheduleSend",13)){
-		printf("scheduleSend\n" );
-		char  plantID[27],  mac[13], schedule_kbn[5];
-
-		parseItemFromPayload("power_plant_id", httpRequest->payload, plantID);
-		parseItemFromPayload("mac_address", httpRequest->payload, mac);
-		parseItemFromPayload("schedule_kbn", httpRequest->payload, schedule_kbn);
-
-		printf("pid=%s mac=%s kbn=%s\n",plantID, mac, schedule_kbn );
-
-		char fileName[64],fileFullPath[256];
-		memset(fileName,0,64);
-		memset(fileFullPath,0,256);
-		
-
-		if(!strncmp(schedule_kbn,"8888",4)){
-			printf("8888 is register\n");
-			//readRegisterBin();
-			//return;
-			genRegisterFile(plantID, fileName);	
-			sprintf(fileFullPath,"%s%s", REGISTER_FILE_PATH, fileName);
-
-			SendJetResponsePacket(fileFullPath, fileName, headBuffer, payloadBuffer, httpRequest);
-		}else if(!strncmp(schedule_kbn,"0000",4)){//day
-			printf("0000 is Today\n");
-			//readRegisterBin();
-			//return;
-			genTodayFile(plantID, fileName);	
-			sprintf(fileFullPath,"%s%s", DAY_FILE_PATH, fileName);
-
-			SendJetResponsePacket(fileFullPath, fileName, headBuffer, payloadBuffer, httpRequest);
-		}else{//YYMM
-			printf("%s is Month\n",schedule_kbn);
-			//readRegisterBin();
-			//return;
-			genMonthFile(plantID, fileName, schedule_kbn);
-			sprintf(fileFullPath,"%s%s", MONTH_FILE_PATH, fileName);
-			printf("\nfileFullPath=%s\n", fileFullPath);
-			//generate return packet
-			SendJetResponsePacket(fileFullPath, fileName, headBuffer, payloadBuffer, httpRequest);
-		}	
-	}else if(!strcmp(httpRequest->action,"/scheduleConfig")){
-		printf("scheduleConfig\n" );
-		char  monthValue[3],  todayValue[3], nextAccessTime[14];
-		SUPPRESS_T *pValue = &gValue.suppress;
-
-		parseItemFromPayload("monthValue", httpRequest->payload, monthValue);
-		parseItemFromPayload("todayValue", httpRequest->payload, todayValue);
-		parseItemFromPayload("nextAccessTime", httpRequest->payload, nextAccessTime);
-
-		printf("monthValue=%s\n", monthValue);
-		printf("todayValue=%s\n", todayValue);
-		printf("nextAccessTime=%s\n", nextAccessTime);
-
-		pValue->monthValue[0] = atoi(monthValue);
-		pValue->todayValue[0] = atoi(todayValue);
-
-		printf("nextAccessTime=");
-		int i = 0;
-		for(i=0; i<14; i++){
-			pValue->nextAccessTime[i] = nextAccessTime[i]-'0';
-			printf("%d", pValue->nextAccessTime[i]);
+	int i=0;
+	while(postFunctions[i].funcPtr != NULL ){
+		if(!strncmp(httpRequest->action, postFunctions[i].cgiName, postFunctions[i].len)){
+			postFunctions[i].funcPtr(httpRequest);
+			break;
 		}
-
-		printf("monthValue=%d\n", pValue->monthValue[0]);
-		printf("todayValue=%d\n", pValue->todayValue[0]);
-		
-
-#ifdef USE_OPENSSL
-		sprintf(headBuffer,getResponseHeader,"text/html",(int)strlen("success"));
-		sprintf(payloadBuffer,"%s","success");
-
-		SSL_write(httpRequest->ssl, headBuffer, strlen(headBuffer));
-		SSL_write(httpRequest->ssl, payloadBuffer, strlen(payloadBuffer));
-#else
-		write(httpRequest->newfd, headBuffer, strlen(headBuffer));
-		write(httpRequest->newfd, payloadBuffer, strlen(payloadBuffer));
-#endif
-
+		i++;
 	}
+
+	if(postFunctions[i].funcPtr == NULL){
+		send404(httpRequest);
+		return;
+	}
+
 #ifdef USE_OPENSSL	
 	SSL_free(httpRequest->ssl);
 #endif	
@@ -262,6 +220,7 @@ void getHandler(httpRequest_T * httpRequest){
 		}
 		if(fileType == NULL){
 			printf("Not Allow Extensions\n");
+			send404(httpRequest);
 			return;
 		}
 	}
@@ -269,6 +228,13 @@ void getHandler(httpRequest_T * httpRequest){
 	//security check
 	if(strstr(httpRequest->action,"..")){
 		printf("SECURITY ISSUE\n");
+		send404(httpRequest);
+		return;
+	}
+
+	if(access( path, R_OK) == -1){
+		printf("File not found\n");
+		send404(httpRequest);
 		return;
 	}
 
@@ -279,14 +245,12 @@ void getHandler(httpRequest_T * httpRequest){
 #ifdef USE_OPENSSL
     SSL_write(httpRequest->ssl, header, strlen(header));
     SSL_write(httpRequest->ssl, body, fileSize);
+    SSL_free(httpRequest->ssl);
 #else    
 	write(httpRequest->newfd, header, strlen(header));
 	write(httpRequest->newfd, body, fileSize);
 #endif
 
-#ifdef USE_OPENSSL	
-	SSL_free(httpRequest->ssl);
-#endif	
 	close(httpRequest->newfd);
 }
 

@@ -30,6 +30,13 @@ struct fileType{
     char *fileType;
 };
 
+typedef struct postFunction  postFunction_T;
+struct postFunction{
+    char *cgiName;
+    int len;
+    void (*funcPtr)(httpRequest_T * );
+};
+
 static const char getResponseHeader[] = ""
         "HTTP/1.1 200 OK\r\n"
         "Content-Type: %s\r\n"
@@ -59,6 +66,24 @@ static const char jetPayloadHeader[] = ""
 static const char jetPayloadTail[] = ""
         "\r\n--BOUNDARY--";
 
+static const char response404[] =""
+    "HTTP/1.1 404 Not Found\r\n"
+    "Server: Apache-Coyote/1.1\r\n"
+    "Vary: Accept-Encoding\r\n"
+    "Content-Length: 284\r\n"
+    "Content-Type: text/html; charset=iso-8859-1\r\n"
+    "\r\n"
+    "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">"
+    "<html><head>"
+    "<title>404 Not Found</title>"
+    "</head><body>"
+    "<h1>Not Found</h1>"
+    "<p>The requested URL /hello was not found on this server.</p>"
+    "<hr>"
+    "<address>Apache/2.2.22 (Debian) Server at 52.200.39.81 Port 8080</address>"
+    "</body></html>";
+
+
 void* httpHandler(void * data);
 char * getMethod(char * buff, int *position);
 char * getAction(char * buff, int *position);
@@ -69,5 +94,7 @@ void parseItemFromPayload(char *item,char *payload, char *ret );
 int getFileSize(char *path);
 void readFileToBuffer(char * file, char *buffer, int num );
 void SendJetResponsePacket(char*fileFullPath, char*fileName, char* headBuffer,char* payloadBuffer, httpRequest_T * httpRequest);
+void send404(httpRequest_T * httpRequest);
+
 
 #endif
