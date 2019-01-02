@@ -93,8 +93,7 @@ void getHandler(httpRequest_T * httpRequest);
 void parseItemFromPayload(char *item,char *payload, char *ret );
 int getFileSize(char *path);
 void readFileToBuffer(char * file, char *buffer, int num );
-void SendJetResponsePacket(char*fileFullPath, char*fileName, char* headBuffer,char* payloadBuffer, httpRequest_T * httpRequest);
-void send404(httpRequest_T * httpRequest);
-
+void send404AndCloseSocket(httpRequest_T * httpRequest);
+char* freadFileToBuffer(char * file, int num );
 
 #endif

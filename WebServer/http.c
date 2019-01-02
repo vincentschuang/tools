@@ -8,18 +8,36 @@
 #include <fcntl.h>
 #include <assert.h>
 #include <unistd.h>
-
 #include <time.h>
+
 #include "http.h"
-#include "parsebinary.h"
 #include "add_openssl.h"
 #include "http_jet.h"
 
-void freadFileToBuffer(char * file, char *buffer, int num ){
+//only for small file
+int getFileSize(char *filename){
+	struct stat st;
+	stat(filename, &st);
+	 return (int)st.st_size;
+}
+
+char* freadFileToBuffer(char * file, int num ){
+	char * buffer;
+	buffer = (char *)malloc(sizeof(char)*num);
+
 	FILE *fp;
+	size_t result;
     fp = fopen (file, "r");
-    fread(buffer,sizeof(char),num,fp);
+    result = fread(buffer,sizeof(char),num,fp);
+
+    //printf("result=%d\n", result);
+
+    if(result != num){
+    	printf("READ Error\n");
+    }
     fclose(fp);
+
+    return buffer;
 }
 
 char * getMethod(char * buff, int * position){
@@ -118,36 +136,9 @@ void parseItemFromPayload(char *item,char *payload, char *ret){
 	}
 }
 
-void SendJetResponsePacket(char*fileFullPath, char*fileName, char* headBuffer,char* payloadBuffer, httpRequest_T * httpRequest){
-	//generate return packet
-			
-	//get File
-	int fileSize = getFileSize(fileFullPath);
-	char *fileBuffer = (char *)malloc( sizeof(char)*fileSize );
-	freadFileToBuffer(fileFullPath, fileBuffer, fileSize );
 
-	int tailSize = strlen(jetPayloadTail);
-	//write payload head
-	sprintf(payloadBuffer,jetPayloadHeader, fileName, fileSize );
-	int headLen = strlen(payloadBuffer);
-	//write file
-	memcpy(&payloadBuffer[headLen], fileBuffer, fileSize);
-	free(fileBuffer);
-	//write tail
-	memcpy(&payloadBuffer[headLen+fileSize],jetPayloadTail,tailSize);
-	//write head
-	sprintf(headBuffer,jetResponseHeader,headLen+fileSize+tailSize);
-#ifdef USE_OPENSSL	
-	SSL_write(httpRequest->ssl, headBuffer, strlen(headBuffer));
-    SSL_write(httpRequest->ssl, payloadBuffer, headLen+fileSize+tailSize);
-#else
-	write(httpRequest->newfd, headBuffer, strlen(headBuffer));
-	write(httpRequest->newfd, payloadBuffer, headLen+fileSize+tailSize);
-#endif
 
-}
-
-void send404(httpRequest_T * httpRequest){
+void send404AndCloseSocket(httpRequest_T * httpRequest){
 #ifdef USE_OPENSSL	
 		SSL_write(httpRequest->ssl, response404, strlen(response404));
 		SSL_free(httpRequest->ssl);
@@ -157,6 +148,14 @@ void send404(httpRequest_T * httpRequest){
 	close(httpRequest->newfd);
 }
 
+//array of function pointer
+postFunction_T postFunctions[]={
+	{"/scheduleSend", 13, scheduleSend},
+	{"/scheduleConfig", 15, scheduleConfig},
+	{"/getScheduleConfig", 18, getScheduleConfig},
+	{"0", 0, NULL}
+};
+
 void postHandler(httpRequest_T * httpRequest){
 	printf("\n\n\n~~~~~~~~~~~postHandler~~~~~~~~~\n");
 	
@@ -164,14 +163,6 @@ void postHandler(httpRequest_T * httpRequest){
 	printf("%d\n", httpRequest->contentLength);
 	printf("%s\n", httpRequest->payload);
 	
-//array of function pointer
-	postFunction_T postFunctions[]={
-		{"/scheduleSend", 13, scheduleSend},
-		{"/scheduleConfig", 15, scheduleConfig},
-		{"/getScheduleConfig", 18, getScheduleConfig},
-		{"0", 0, NULL}
-	};
-
 	int i=0;
 	while(postFunctions[i].funcPtr != NULL ){
 		if(!strncmp(httpRequest->action, postFunctions[i].cgiName, postFunctions[i].len)){
@@ -182,7 +173,7 @@ void postHandler(httpRequest_T * httpRequest){
 	}
 
 	if(postFunctions[i].funcPtr == NULL){
-		send404(httpRequest);
+		send404AndCloseSocket(httpRequest);
 		return;
 	}
 
@@ -194,9 +185,10 @@ void postHandler(httpRequest_T * httpRequest){
 }
 
 void getHandler(httpRequest_T * httpRequest){
-	char body[BODY_BUFFER_LEN], header[HEADER_LEN];
-	memset(body,0,BODY_BUFFER_LEN);
+	char header[HEADER_LEN];
 	memset(header,0,HEADER_LEN);
+
+	char * body;
 
 	char * fileType=NULL;
 
@@ -206,6 +198,7 @@ void getHandler(httpRequest_T * httpRequest){
 	memset(path,0,PATH_LEN);
 	strcat(path, WWW_FOLDER);
 	strcat(path, httpRequest->action);
+
 
 	if( !strcmp(httpRequest->action,"/") ){
 		strcat(path, HOME_PAGE);
@@ -220,28 +213,26 @@ void getHandler(httpRequest_T * httpRequest){
 		}
 		if(fileType == NULL){
 			printf("Not Allow Extensions\n");
-			send404(httpRequest);
+			send404AndCloseSocket(httpRequest);
 			return;
 		}
 	}
 
-	//security check
-	if(strstr(httpRequest->action,"..")){
-		printf("SECURITY ISSUE\n");
-		send404(httpRequest);
-		return;
-	}
 
 	if(access( path, R_OK) == -1){
 		printf("File not found\n");
-		send404(httpRequest);
+		send404AndCloseSocket(httpRequest);
 		return;
 	}
 
 	int fileSize = getFileSize(path);
-	freadFileToBuffer(path, body, fileSize );
+	body = freadFileToBuffer(path, fileSize );
+	if(!body){
+		printf("Read File Fail\n");
+	}
 
     sprintf(header,getResponseHeader,fileType ,fileSize);
+
 #ifdef USE_OPENSSL
     SSL_write(httpRequest->ssl, header, strlen(header));
     SSL_write(httpRequest->ssl, body, fileSize);
@@ -250,84 +241,97 @@ void getHandler(httpRequest_T * httpRequest){
 	write(httpRequest->newfd, header, strlen(header));
 	write(httpRequest->newfd, body, fileSize);
 #endif
-
+	free(body);
 	close(httpRequest->newfd);
 }
 
 void handleRequest(int newfd){
-	httpRequest_T httpRequest;
-	httpRequest.contentLength = 0;
-	httpRequest.newfd = newfd;
+	httpRequest_T * httpRequest = (httpRequest_T *)malloc(sizeof(httpRequest_T));
+	httpRequest->contentLength = 0;
+	httpRequest->newfd = newfd;
 #ifdef USE_OPENSSL
-	httpRequest.ssl = SSL_new(ctx);
-	SSL_set_fd(httpRequest.ssl, httpRequest.newfd);
+	httpRequest->ssl = SSL_new(ctx);
+	SSL_set_fd(httpRequest->ssl, httpRequest->newfd);
 #endif	
-
 
 	char buffer[BUFFER_SIZE];
 	bzero(buffer, BUFFER_SIZE);
 
 	int position = 0, recvCount = 0;
 #ifdef USE_OPENSSL
-	if (SSL_accept(httpRequest.ssl) <= 0) {
+	if (SSL_accept(httpRequest->ssl) <= 0) {
         ERR_print_errors_fp(stderr);
+        SSL_free(httpRequest->ssl);
+		close(newfd);
         return;
     }else{
-    	recvCount = SSL_read(httpRequest.ssl, buffer, BUFFER_SIZE);
+    	recvCount = SSL_read(httpRequest->ssl, buffer, BUFFER_SIZE);
     }
 #else
 	recvCount = recv(newfd, buffer, BUFFER_SIZE, 0);
-	if(recvCount < 0){
-		printf("recv error\n");
+#endif
+	if(recvCount <= 0){
+		//printf("recv error\n");
+#ifdef USE_OPENSSL		
+		SSL_free(httpRequest->ssl);
+#endif
+		close(newfd);
 		return;
 	}
-#endif	
-	//buffer[recvCount] = 0;
 
-	//printf("\n\n\n\n\nrecvBuffer=%s\n", buffer);
-
-	httpRequest.method = getMethod(buffer, &position);
-	if(!httpRequest.method){
+	httpRequest->method = getMethod(buffer, &position);
+	if(!httpRequest->method){
 		printf("NOT found this Method\n");
+#ifdef USE_OPENSSL		
+		SSL_free(httpRequest->ssl);
+#endif
+		close(newfd);		
 		return;
 	}
-	//printf("Method=%s\n", httpRequest.method);
 
-
-	httpRequest.action = getAction(buffer+position, &position);
-	if(!httpRequest.action){
+	httpRequest->action = getAction(buffer+position, &position);
+	if(!httpRequest->action){
 		printf("No action\n" );
+#ifdef USE_OPENSSL		
+		SSL_free(httpRequest->ssl);
+#endif
+		close(newfd);
 		return;
 	}
-	//printf("Action=%s\n\n", httpRequest.action);
 
 	if(!strncmp(buffer,"POST ",4) ){
-		httpRequest.contentLength = getContentLength(buffer+position, &position);
-		httpRequest.payload = getPayload(buffer+position);
+		httpRequest->contentLength = getContentLength(buffer+position, &position);
+		httpRequest->payload = getPayload(buffer+position);
 
 		//somtimes post packet is big
 		//need to recv more times
 		int retry = 5;
-		while( (&buffer[recvCount]-httpRequest.payload) <  httpRequest.contentLength && retry--){
+		while( (&buffer[recvCount]-httpRequest->payload) <  httpRequest->contentLength && retry--){
 			printf("retry=%d\n",retry );
 #ifdef USE_OPENSSL			
-			recvCount += SSL_read(httpRequest.ssl, &buffer[recvCount], BUFFER_SIZE-recvCount);
+			recvCount += SSL_read(httpRequest->ssl, &buffer[recvCount], BUFFER_SIZE-recvCount);
 #else
 			recvCount += recv(newfd, &buffer[recvCount], BUFFER_SIZE-recvCount, 0);
 #endif			
 		}
 
-		if( (&buffer[recvCount]-httpRequest.payload) <  httpRequest.contentLength ){
+		if( (&buffer[recvCount]-httpRequest->payload) <  httpRequest->contentLength ){
 			printf("Fail to recv all content\n");
+#ifdef USE_OPENSSL		
+			SSL_free(httpRequest->ssl);
+#endif
+			close(newfd);
 			return;
 		}else{
-			postHandler(&httpRequest);
+			postHandler(httpRequest);
 		}
-	}else if(!strncmp(httpRequest.method,"GET",3)){
-		getHandler(&httpRequest);
+	}else if(!strncmp(httpRequest->method,"GET",3)){
+		getHandler(httpRequest);
 	}else{
 		printf("NOT Support this Method\n");
 	}
+
+	free(httpRequest);
 }
 
 void* httpHandler(void * data){
@@ -343,14 +347,8 @@ void* httpHandler(void * data){
             pthread_cond_wait(&taskQueue->workAvailable, &taskQueue->mutex);
         }
 
+        //printf("taskQueue->tasks=%d\n", taskQueue->tasks);
 		assert(taskQueue->tasks > 0);
-
-		task = (LIST_ENTRY_T *)malloc(sizeof(*task));
-		if (task == NULL){
-			printf("Malloc Task fail\n");
-			pthread_mutex_unlock(&taskQueue->mutex);
-			pthread_exit(NULL);
-		}
 		
 		task = STAILQ_FIRST(&taskQueue->list_head);
 		newfd = task->newfd;
@@ -359,6 +357,7 @@ void* httpHandler(void * data){
 		taskQueue->tasks--;
 		pthread_mutex_unlock(&taskQueue->mutex);
 
+		//printf("\n\nthread id=%d\n", (int)pthread_self()&0x1111);
 		handleRequest(newfd);	
 		
 	}

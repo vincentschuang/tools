@@ -33,8 +33,41 @@ int openssl_create_socket(int port)
     return s;
 }
 
+pthread_mutex_t *ssl_mutex = NULL;
+ 
+static void ssl_locking_cb (int mode, int id, const char* file, int line)
+{
+  if (mode & CRYPTO_LOCK)
+    pthread_mutex_lock(&ssl_mutex[id]);
+  else
+    pthread_mutex_unlock(&ssl_mutex[id]);
+}
+ 
+static unsigned long ssl_id_cb (void)
+{
+  return ((unsigned long)pthread_self());
+}
+
 void init_openssl()
-{ 
+{
+#if 0
+    int   i;
+
+    /* The number of lock we need is getting from CRYPTO_num_locks() */
+    if ((ssl_mutex = malloc(sizeof(pthread_mutex_t) * CRYPTO_num_locks())) == NULL) {
+        printf("malloc() failed.\n");
+        return;
+    }
+
+    /* Init. mutex. */
+    for (i = 0; i < CRYPTO_num_locks(); i++) {
+        pthread_mutex_init(&ssl_mutex[i], NULL);
+    }
+
+    /* Set up locking function */
+    CRYPTO_set_id_callback(ssl_id_cb);
+    CRYPTO_set_locking_callback(ssl_locking_cb);
+#endif
     SSL_load_error_strings();	
     OpenSSL_add_ssl_algorithms();
 }
@@ -76,6 +109,10 @@ void configure_context(SSL_CTX *ctx)
 	exit(EXIT_FAILURE);
     }
 }
+
+
+ 
+
 #if 0
 int main(int argc, char **argv)
 {

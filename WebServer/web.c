@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 
-
+#include <signal.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -41,14 +41,12 @@ void addTask(taskQueue_T* taskQueue, int newsockfd){
 	}
 
 	LIST_ENTRY_T * newEntry = (LIST_ENTRY_T*)malloc(sizeof(*newEntry));
-
 	if(newEntry  == NULL){
 		printf("Malloc Fail\n");
 		return;
 	}
 
 	newEntry->newfd = newsockfd;
-
 	STAILQ_INSERT_TAIL(&taskQueue->list_head, newEntry, next);
 	taskQueue->tasks++;
 
@@ -68,6 +66,23 @@ GVALUE_T gValue={
 	}
 };
 
+taskQueue_T* initTaskQueue(){
+	taskQueue_T * queue;
+	queue = (taskQueue_T *)malloc(sizeof(taskQueue_T));
+
+	queue->tasks = 0;
+	//queue->mutex = PTHREAD_MUTEX_INITIALIZER;
+
+	pthread_mutex_init(&queue->mutex, NULL);
+	//queue->workAvailable = PTHREAD_COND_INITIALIZER;
+	pthread_cond_init(&queue->workAvailable,NULL);
+	//queue->list_head = STAILQ_HEAD_INITIALIZER(taskQueue->list_head);
+	STAILQ_INIT(&queue->list_head);
+
+	return queue;
+}
+
+
 int main()
 {
 	int fd = 0;
@@ -78,6 +93,7 @@ int main()
     configure_context(ctx);
 #endif
 
+    sigignore(SIGPIPE);
 
     fd = TcpSocketCreate();
 
@@ -90,16 +106,12 @@ int main()
  	printf("Listening...\n");
 
  	//init task queue
- 	taskQueue_T taskQueue = {
- 		.tasks = 0,
-		.mutex = PTHREAD_MUTEX_INITIALIZER,
-		.workAvailable = PTHREAD_COND_INITIALIZER,
-		.list_head = STAILQ_HEAD_INITIALIZER(taskQueue.list_head),
- 	};
+ 	taskQueue_T* taskQueue;
+ 	taskQueue = initTaskQueue();
 
  	//init thread pool
  	pthread_t * threadID;
- 	threadID = initThreadPool(&taskQueue);
+ 	threadID = initThreadPool(taskQueue);
 
  	struct sockaddr_in client_addr;
   	socklen_t cli_len = sizeof(client_addr);
@@ -112,7 +124,7 @@ int main()
 
 		printf("New socket: %d\n", newsockfd);
 
-		addTask(&taskQueue, newsockfd);
+		addTask(taskQueue, newsockfd);
 	}
 
 

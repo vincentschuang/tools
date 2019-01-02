@@ -1,7 +1,7 @@
 #ifndef __WEB_H__
 #define __WEB_H__
 
-#define USE_OPENSSL 1
+//#define USE_OPENSSL 1
 
 #ifdef USE_OPENSSL
 #define LISTEN_PORT		 443
@@ -11,7 +11,7 @@
 
 #define CONNECTION_LIMIT 10
 #define WWW_FOLDER		 "/home/pvicm/tools/WebServer"
-#define THREAD_LIMIT	10
+#define THREAD_LIMIT	4
 
 #include <sys/queue.h>
 #include <pthread.h>
