@@ -10,8 +10,8 @@
 
 //functions
 int openssl_create_socket(int port);
-void init_openssl();
-SSL_CTX *create_context();
-void configure_context(SSL_CTX *ctx);
+void initOpenssl();
+SSL_CTX *createContext();
+void configureContext(SSL_CTX *ctx);
 
 #endif

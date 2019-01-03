@@ -88,11 +88,13 @@ int main()
 	int fd = 0;
 
 #ifdef USE_OPENSSL
-    init_openssl();
-    ctx = create_context();
-    configure_context(ctx);
+    initOpenssl();
+    ctx = createContext();
+    configureContext(ctx);
 #endif
 
+    //if client closed before server response, will cause SIGPIPE signal and kill server,
+    //so we have to ignore it
     sigignore(SIGPIPE);
 
     fd = TcpSocketCreate();
@@ -122,7 +124,7 @@ int main()
 		if (newsockfd < 0) 
 			printf("Error on accept");
 
-		printf("New socket: %d\n", newsockfd);
+		//printf("New socket: %d\n", newsockfd);
 
 		addTask(taskQueue, newsockfd);
 	}

@@ -90,23 +90,7 @@ char * getPayload(char * buff){
 	return ptr+4;
 }
 
-fileType_T extensions [] = {
-    {"jpg", "image/jpeg"},
-    {"jpeg","image/jpeg"},
-    {"png", "image/png" },
-    {"ico", "image/vnd.microsoft.icon" },
-    {"js", "text/javascript;"},
-    {"htm", "text/html" },
-    {"html","text/html" },
-    {"json","application/json"},
-    {"css","text/css" },
-    {"exe","text/plain" },
-    {"gif", "image/gif" },
-    {"zip", "image/zip" },
-    {"gz",  "image/gz"  },
-    {"tar", "image/tar" },
-    {0,0} 
-};
+
 
 //todo: use return to indicate success or fail
 void parseItemFromPayload(char *item,char *payload, char *ret){
@@ -163,16 +147,18 @@ void postHandler(httpRequest_T * httpRequest){
 	printf("%d\n", httpRequest->contentLength);
 	printf("%s\n", httpRequest->payload);
 	
+	postFunction_T * postFuncArray = postFunctions;
+
 	int i=0;
-	while(postFunctions[i].funcPtr != NULL ){
-		if(!strncmp(httpRequest->action, postFunctions[i].cgiName, postFunctions[i].len)){
-			postFunctions[i].funcPtr(httpRequest);
+	while(postFuncArray[i].funcPtr != NULL ){
+		if(!strncmp(httpRequest->action, postFuncArray[i].cgiName, postFuncArray[i].len)){
+			postFuncArray[i].funcPtr(httpRequest);
 			break;
 		}
 		i++;
 	}
 
-	if(postFunctions[i].funcPtr == NULL){
+	if(postFuncArray[i].funcPtr == NULL){
 		send404AndCloseSocket(httpRequest);
 		return;
 	}
@@ -184,6 +170,24 @@ void postHandler(httpRequest_T * httpRequest){
 
 }
 
+fileType_T extensions [] = {
+    {"jpg", "image/jpeg"},
+    {"jpeg","image/jpeg"},
+    {"png", "image/png" },
+    {"ico", "image/vnd.microsoft.icon" },
+    {"js", "text/javascript;"},
+    {"htm", "text/html" },
+    {"html","text/html" },
+    {"json","application/json"},
+    {"css","text/css" },
+    {"exe","text/plain" },
+    {"gif", "image/gif" },
+    {"zip", "image/zip" },
+    {"gz",  "image/gz"  },
+    {"tar", "image/tar" },
+    {0,0} 
+};
+
 void getHandler(httpRequest_T * httpRequest){
 	char header[HEADER_LEN];
 	memset(header,0,HEADER_LEN);
@@ -192,23 +196,24 @@ void getHandler(httpRequest_T * httpRequest){
 
 	char * fileType=NULL;
 
-	int file_fd, ret, len=0, i;
+	int ret, len=0, i;
 
 	char path[PATH_LEN];
 	memset(path,0,PATH_LEN);
 	strcat(path, WWW_FOLDER);
 	strcat(path, httpRequest->action);
 
+	fileType_T * pExtention = extensions;
 
 	if( !strcmp(httpRequest->action,"/") ){
 		strcat(path, HOME_PAGE);
 	}else{
 		int actionLen = strlen(httpRequest->action);
 		int extLen = 0;
-		for(i=0; extensions[i].ext; i++){
-			extLen = strlen(extensions[i].ext);
-			if(!strncmp(&httpRequest->action[actionLen-extLen], extensions[i].ext, extLen)){
-				fileType = extensions[i].fileType;
+		for(i=0; pExtention[i].ext; i++){
+			extLen = strlen(pExtention[i].ext);
+			if(!strncmp(&httpRequest->action[actionLen-extLen], pExtention[i].ext, extLen)){
+				fileType = pExtention[i].fileType;
 			}
 		}
 		if(fileType == NULL){
@@ -299,7 +304,11 @@ void handleRequest(int newfd){
 		return;
 	}
 
-	if(!strncmp(buffer,"POST ",4) ){
+
+	if(!strncmp(httpRequest->method,"GET",3)){
+		buffer[recvCount] = '\0';
+		getHandler(httpRequest);
+	}else if(!strncmp(httpRequest->method,"POST ",4) ){
 		httpRequest->contentLength = getContentLength(buffer+position, &position);
 		httpRequest->payload = getPayload(buffer+position);
 
@@ -323,10 +332,9 @@ void handleRequest(int newfd){
 			close(newfd);
 			return;
 		}else{
+			buffer[recvCount] = '\0';
 			postHandler(httpRequest);
 		}
-	}else if(!strncmp(httpRequest->method,"GET",3)){
-		getHandler(httpRequest);
 	}else{
 		printf("NOT Support this Method\n");
 	}
@@ -337,7 +345,7 @@ void handleRequest(int newfd){
 void* httpHandler(void * data){
 
 	taskQueue_T* taskQueue = (taskQueue_T*) data;
-	LIST_ENTRY_T * task;
+	LIST_ENTRY_T * getTask;
 	int newfd;
 
 	while(1){
@@ -350,10 +358,10 @@ void* httpHandler(void * data){
         //printf("taskQueue->tasks=%d\n", taskQueue->tasks);
 		assert(taskQueue->tasks > 0);
 		
-		task = STAILQ_FIRST(&taskQueue->list_head);
-		newfd = task->newfd;
+		getTask = STAILQ_FIRST(&taskQueue->list_head);
+		newfd = getTask->newfd;
 		STAILQ_REMOVE_HEAD(&taskQueue->list_head, next);
-		free(task);
+		free(getTask);
 		taskQueue->tasks--;
 		pthread_mutex_unlock(&taskQueue->mutex);
 

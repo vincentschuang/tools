@@ -48,7 +48,7 @@ static unsigned long ssl_id_cb (void)
   return ((unsigned long)pthread_self());
 }
 
-void init_openssl()
+void initOpenssl()
 {
 #if 0
     int   i;
@@ -77,7 +77,7 @@ void cleanup_openssl()
     EVP_cleanup();
 }
 
-SSL_CTX *create_context()
+SSL_CTX *createContext()
 {
     const SSL_METHOD *method;
     SSL_CTX *ctx;
@@ -94,7 +94,7 @@ SSL_CTX *create_context()
     return ctx;
 }
 
-void configure_context(SSL_CTX *ctx)
+void configureContext(SSL_CTX *ctx)
 {
     SSL_CTX_set_ecdh_auto(ctx, 1);
 
