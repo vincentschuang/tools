@@ -60,7 +60,7 @@ void scheduleSend(httpRequest_T * httpRequest){
 
 	if(!strncmp(schedule_kbn,"8888",4)){
 		printf("8888 is register\n");
-		readRegisterFile();
+		//readRegisterFile();
 		//return;
 		genRegisterFile(plantID, fileName);	
 		sprintf(fileFullPath,"%s%s", REGISTER_FILE_PATH, fileName);
