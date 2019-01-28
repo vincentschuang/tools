@@ -41,6 +41,8 @@ struct suppress {
 	char nextAccessTime[15];
 	char todayValue[48];
 	char monthValue[1];
+	char someDay[8];
+	char someDayValue[48];
 };
 typedef struct suppress SUPPRESS_T;
 

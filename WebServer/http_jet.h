@@ -29,6 +29,8 @@
 	}												\
 }while(0)
 
+
+
 #define TEST_REGISTER_FILE_PATH HOME"register.bin"
 #define TEST_MONTH_FILE_PATH HOME"month.bin"
 //#define TEST_DAY_FILE_PATH "/home/pvicm/today.bin"
@@ -43,7 +45,7 @@
 
 #define TEST_REG_FILE REGISTER_FILE_PATH"301_8888_09086660000001000000010010_20190103153303.data"
 #define TEST_DAY_FILE DAY_FILE_PATH"203_0000_09086660000001000000010010_20190103133934.data"
-#define TEST_MONTH_FILE MONTH_FILE_PATH"202_2001_09086660000001000000010010_20190103144334.data"
+#define TEST_MONTH_FILE MONTH_FILE_PATH"202_1902_09086660000001000000010010_20190111170821.data"
 
 #define EXTRA_BIT 1
 
@@ -57,6 +59,8 @@
 #define CHECKSUM_LEN 2
 #define NEXT_TIME_LEN 14
 #define MONTH_DATA_LEN 1488
+
+#define NULL_CHAR_FOR_FRONTEND 'n'
 
 struct monthPacketUpper{
 	char type[TYPE_LEN];
@@ -94,7 +98,13 @@ struct regPacket{
 };
 typedef struct regPacket regPacket_t;
 
-
+struct HM_NUM{
+	char hour;
+	char min;
+	int num;
+	int numOfN;
+};
+typedef struct HM_NUM HM_NUM_t;
 
 
 void scheduleSend(httpRequest_T * httpRequest);
@@ -113,4 +123,7 @@ int getMonthChecksum(char *buffer,int numOfData, char* YYMM);
 int getDayChecksum(char *buffer,int numOfData, char* YYYYMMDDhhmm);
 void SendJetResponsePacket(char*fileFullPath, char*fileName, char* headBuffer,char* payloadBuffer, httpRequest_T * httpRequest);
 void readTestBin();
+HM_NUM_t calStartHourMinute();
+
+
 #endif

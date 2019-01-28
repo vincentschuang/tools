@@ -66,7 +66,7 @@ void scheduleSend(httpRequest_T * httpRequest){
 		sprintf(fileFullPath,"%s%s", REGISTER_FILE_PATH, fileName);
 
 		SendJetResponsePacket(fileFullPath, fileName, headBuffer, payloadBuffer, httpRequest);
-	}else if(!strncmp(schedule_kbn,"0000",4)){//day
+	}else if(!strncmp(schedule_kbn,"0000",4)){//today
 		printf("0000 is Today\n");
 		//readTodayFile();
 		//return;
@@ -94,7 +94,7 @@ void scheduleConfig(httpRequest_T * httpRequest){
 
 	printf("scheduleConfig\n" );
 
-	char  monthValue[3],  todayValue[48*4], nextAccessTime[15];
+	char  monthValue[3+1],  todayValue[48*4+1], nextAccessTime[14+1];
 	SUPPRESS_T *pValue = &gValue.suppress;
 
 	parseItemFromPayload("monthValue", httpRequest->payload, monthValue);
@@ -112,6 +112,8 @@ void scheduleConfig(httpRequest_T * httpRequest){
 		if(todayValue[i] == ',' ){
 			pValue->todayValue[comma++] = tmp;
 			tmp = 0;
+		}else if(todayValue[i] == NULL_CHAR_FOR_FRONTEND){
+			tmp = NULL_CHAR_FOR_FRONTEND;
 		}else{
 			tmp = tmp*10 + todayValue[i]-'0';
 		}
@@ -129,7 +131,38 @@ void scheduleConfig(httpRequest_T * httpRequest){
 	}
 
 	printf("monthValue=%d\n", pValue->monthValue[0]);
-	printf("todayValue=%d\n", pValue->todayValue[0]);
+	printf("todayValue=%d\n\n\n", pValue->todayValue[0]);
+
+
+	char someDayValue[48*4+1];
+	parseItemFromPayload("somedayValue", httpRequest->payload, someDayValue);
+	printf("somedayValue=%s\n", someDayValue);
+
+	i=0; len=0; comma=0; tmp=0;
+	for(i=0, len=strlen(someDayValue); i<len; i++){
+		if(someDayValue[i] == ',' ){
+			pValue->someDayValue[comma++] = tmp;
+			tmp = 0;
+		}else{
+			tmp = tmp*10 + someDayValue[i]-'0';
+		}
+	}
+
+	for(i=0;i<48;i++){
+		printf("%d ", pValue->someDayValue[i]);
+	}
+
+	char someDay[8+1];
+	parseItemFromPayload("someDay", httpRequest->payload, someDay);
+	printf("someDay=%s\n", someDay);
+
+	for(i=0; i<8; i++){
+		pValue->someDay[i] = someDay[i];
+		printf("%c", pValue->someDay[i]);
+	}
+
+	printf("monthValue=%d\n", pValue->monthValue[0]);
+
 	
 	sprintf(headBuffer,getResponseHeader,"text/html",(int)strlen("success"));
 	sprintf(payloadBuffer,"%s","success");
@@ -142,6 +175,7 @@ void scheduleConfig(httpRequest_T * httpRequest){
 	write(httpRequest->newfd, payloadBuffer, strlen(payloadBuffer));
 #endif
 }
+
 
 void getScheduleConfig(httpRequest_T * httpRequest){
 
@@ -297,14 +331,14 @@ int getMonthChecksum(char *buffer,int numOfData, char* YYMM){
 	return sum%divider;
 }
 
-int getDayChecksum(char *buffer,int numOfData, char* YYYYMMDDhhmm){
+int getDayChecksum(char *buffer,int numOfData, char* YYYYMMDD){
 	int sum=0;
 	int i=0;
 	for(i=0;i<numOfData;i++){
 		sum += buffer[i];
 	}
 
-	int divider = (YYYYMMDDhhmm[4]-'0')*10 + YYYYMMDDhhmm[5]-'0' + (YYYYMMDDhhmm[6]-'0')*10 + YYYYMMDDhhmm[7]-'0';
+	int divider = (YYYYMMDD[4]-'0')*10 + YYYYMMDD[5]-'0' + (YYYYMMDD[6]-'0')*10 + YYYYMMDD[7]-'0';
 
 	printf("\n\nsum=%d divider=%d\n", sum, divider);
 
@@ -314,22 +348,27 @@ int getDayChecksum(char *buffer,int numOfData, char* YYYYMMDDhhmm){
 void genMonthFile(char * plantID, char* fileName, char * YYMM){
 	time_t time_raw_format;
     struct tm * ptr_time;
-    char timeBuffer[50], thisYYMMBuffer[4];
-    int year, month, today;
+    char timeBuffer[50];  
 
     time ( &time_raw_format );
     ptr_time = localtime ( &time_raw_format );
     strftime(timeBuffer,50,"%Y%m%d%H%M%S",ptr_time);
 	sprintf(fileName,"202_%s_%s_%s.data",YYMM , plantID, timeBuffer);
+	printf("fileName=%s\n", fileName );
 
+	int year, month, today;
 	month = ptr_time->tm_mon + 1;
 	year = ptr_time->tm_year + 1900 - 2000;
 	today = ptr_time->tm_mday;
-	sprintf(thisYYMMBuffer,"%d%d",year,month);
 
-	printf("month=%d year=%d\n", month, year);
+	char thisYYMMBuffer[4];
+	if(month >9){
+		sprintf(thisYYMMBuffer,"%d%d",year,month);
+	}else{
+		sprintf(thisYYMMBuffer,"%d0%d",year,month);
+	}
 
-	printf("fileName=%s\n", fileName );
+	printf("sys month=%d year=%d today=%d \n", month, year, today);
 
 	char fileFullPath[256];
 	memset(fileFullPath,0,256);
@@ -343,7 +382,7 @@ void genMonthFile(char * plantID, char* fileName, char * YYMM){
 	//files  6
 	buffer[5]=1;
 
-	//dayly ID
+	//daily ID
 	int i=0;
 	char dailyID[]={'4','0','0','0','0','9','9','0','0','0'};
 	printf("\n\ndailyID\n");
@@ -372,33 +411,55 @@ void genMonthFile(char * plantID, char* fileName, char * YYMM){
 	int days = daysInMonth(YYMM);
 	printf("\n\ndays\n");
 	printf("%d\n", days);
-	int numOfSuppressData = 24*2*days;
-
+	
 	printf("\n\nnumber of suppress data\n");
+	int numOfSuppressData = 24*2*days;
 	printf("%d", numOfSuppressData);
+
 	buffer[54]=0;
 	buffer[55] = numOfSuppressData/1000;
 	buffer[56] = (numOfSuppressData%1000)/100;
 	buffer[57] = (numOfSuppressData%100)/10;
 	buffer[58] = (numOfSuppressData%10)/1;
 
-	//suppress data   num of suppress data
-	//month value =100;
 	SUPPRESS_T *pValue = &gValue.suppress;
 
 	printf("\n\nsuppress data\n");
-	for(i=59; i<59+numOfSuppressData; i++){
-		buffer[i] = pValue->monthValue[0];
-		//printf("%d", buffer[i]);
-	}
+	memset(&buffer[59], pValue->monthValue[0], numOfSuppressData);
 
 	//replace today to month
-	int start = 0;
+	printf("thisYYMMBuffer=%s YYMM=%s\n", thisYYMMBuffer, YYMM);
 	if(!strncmp(thisYYMMBuffer,YYMM,4)){
+		int start;
 		start = (today-1)*48;
 		for(i=0;i<48;i++){
-			buffer[59+start+i] = pValue->todayValue[i];
+			if(pValue->todayValue[i]!= NULL_CHAR_FOR_FRONTEND){
+				buffer[59+start+i] = pValue->todayValue[i];
+			}
 		}
+	}
+
+	//replace someDay Value
+	char someYYMM[5];
+	int someDay = 0;
+	memcpy(someYYMM, &pValue->someDay[2], 4);
+
+	someYYMM[4]=0;
+	someDay = (pValue->someDay[6]-'0')*10 + pValue->someDay[7]-'0';
+	printf("SOMEYYMM=%s %s  someDay=%d\n",someYYMM, YYMM, someDay );
+	if(!strncmp(someYYMM,YYMM,4)){
+		int start;
+		start = (someDay-1)*48;
+		for(i=0;i<48;i++){
+			buffer[59+start+i] = pValue->someDayValue[i];
+		}
+	}
+
+
+	printf("\n\ndebug suppress data\n");
+	for(i=59; i<59+numOfSuppressData; i++){
+		//buffer[i] = pValue->monthValue[0];
+		printf("%d", buffer[i]);
 	}
 
 	//calculate checksum
@@ -418,13 +479,37 @@ void genMonthFile(char * plantID, char* fileName, char * YYMM){
 	fclose(pFile);
 }
 
+HM_NUM_t calStartHourMinute(){
+	SUPPRESS_T *pValue = &gValue.suppress;
+
+	HM_NUM_t ret;
+	ret.num = 0;
+	int n_before_value=0, n_after_value=0, i=0;
+	for(i=0;i<48;i++){
+		if(pValue->todayValue[i] == NULL_CHAR_FOR_FRONTEND){
+			if(ret.num == 0){
+				n_before_value++;
+			}else{
+				n_after_value++;
+			}
+		}else{
+			ret.num++;
+		}
+	}
+
+	ret.hour = n_before_value>>1;
+	ret.min = n_before_value&(int)0x01;
+	ret.numOfN = n_before_value;
+	return ret;
+}
+
 void genTodayFile(char * plantID, char* fileName){
 	time_t time_raw_format;
     struct tm * ptr_time;
     char timeBuffer[50];
 
-    time ( &time_raw_format );
-    ptr_time = localtime ( &time_raw_format );
+    time( &time_raw_format );
+    ptr_time = localtime( &time_raw_format );
     strftime(timeBuffer,50,"%Y%m%d%H%M%S",ptr_time);
 	sprintf(fileName,"203_0000_%s_%s.data" , plantID, timeBuffer);
 
@@ -458,37 +543,38 @@ void genTodayFile(char * plantID, char* fileName){
 		printf("%d",buffer[i] );
 	}
 
-	//YYYYMMDDhhmm 12
+	//YYYYMMDD 8
 	memset(timeBuffer,0,50);
-	strftime(timeBuffer,50,"%Y%m%d0000",ptr_time);
-	printf("\n\nYYYYMMDDhhmm\n");
-	for(i=42; i<54;i++){
+	strftime(timeBuffer,50,"%Y%m%d",ptr_time);
+	printf("\n\nYYYYMMDD\n");
+	for(i=42; i<50;i++){
 		buffer[i] = timeBuffer[i-42]-'0';
 		printf("%d",buffer[i] );
 	}
 
-	//num of suppress data  5
-	int days = 1;
-	printf("\n\ndays\n");
-	printf("%d\n", days);
-	int numOfSuppressData = 24*2*days;
+	//hhmm 4
+	HM_NUM_t HM_NUM = calStartHourMinute();
+	buffer[50] = HM_NUM.hour/10;
+	buffer[51] = HM_NUM.hour%10;
+	buffer[52] = HM_NUM.min/10;
+	buffer[53] = HM_NUM.min%10;
 
+	//num of suppress data  5
+	int numOfSuppressData = HM_NUM.num;
 	printf("\n\nnumber of suppress data\n");
 	printf("%d", numOfSuppressData);
-	buffer[54]=0;
+	buffer[54] = 0;
 	buffer[55] = numOfSuppressData/1000;
 	buffer[56] = (numOfSuppressData%1000)/100;
 	buffer[57] = (numOfSuppressData%100)/10;
 	buffer[58] = (numOfSuppressData%10)/1;
 
-	//suppress data   num of suppress data
-	//day value =100;
-	SUPPRESS_T *pValue = &gValue.suppress;
 
 	printf("\n\nsuppress data\n");
+	SUPPRESS_T *pValue = &gValue.suppress;
 
 	for(i=59; i<59+numOfSuppressData; i++){
-		buffer[i] = pValue->todayValue[i-59];
+		buffer[i] = pValue->todayValue[i - 59 + HM_NUM.numOfN];
 		//printf("%d", buffer[i]);
 	}
 
@@ -519,7 +605,106 @@ void genTodayFile(char * plantID, char* fileName){
 	fclose(pFile);
 }
 
-void printItem(char* name,char * item,int len){
+void genTodayFile2(char * plantID, char* fileName){
+	time_t time_raw_format;
+    struct tm * ptr_time;
+    char timeBuffer[50];
+    dailyPacket_t packet;
+
+    time ( &time_raw_format );
+    ptr_time = localtime ( &time_raw_format );
+    strftime(timeBuffer,50,"%Y%m%d%H%M%S",ptr_time);
+	sprintf(fileName,"203_0000_%s_%s.data" , plantID, timeBuffer);
+
+	printf("fileName=%s\n", fileName );
+
+	char fileFullPath[256];
+	memset(fileFullPath,0,256);
+	sprintf(fileFullPath,"%s%s", DAY_FILE_PATH, fileName);
+	printf("fileFullPath=%s\n", fileFullPath);
+
+	//files  6
+	//buffer[5]=1;
+	memset(packet.type, 0, TYPE_LEN);
+	packet.type[5]=1;
+	//daily ID
+	int i=0;
+	char dailyID[]={'4','0','4','0','0','0','0','0','0','0'};
+	printf("\n\ndailyID\n");
+	for(i=0; i<SCH_ID_LEN; i++){
+		packet.scheduleID[i] = dailyID[i]-'0';
+		//printf("%d", buffer[i] );
+	}
+
+	//plantID 26
+	printf("\n\nplantID\n");
+	for(i=0; i<PLANT_ID_LEN; i++){
+		packet.plantID[i] = plantID[i]-'0';
+		//printf("%d",buffer[i] );
+	}
+
+	//YYYYMMDD 8
+	memset(timeBuffer,0,50);
+	strftime(timeBuffer,50,"%Y%m%d",ptr_time);
+	printf("\n\nYYYYMMDD\n");
+	for(i=0; i<TIME_LEN-4;i++){
+		packet.time[i] = timeBuffer[i]-'0';
+		//printf("%d",buffer[i] );
+	}
+
+	//hhmm 4
+	HM_NUM_t HM_NUM = calStartHourMinute();
+	packet.time[TIME_LEN-4] = HM_NUM.hour/10;
+	packet.time[TIME_LEN-3] = HM_NUM.hour%10;
+	packet.time[TIME_LEN-2] = HM_NUM.min/10;
+	packet.time[TIME_LEN-1] = HM_NUM.min%10;
+
+	//num of suppress data  5
+	int numOfSuppressData = HM_NUM.num;
+	printf("\n\nnumber of suppress data\n");
+	printf("%d", numOfSuppressData);
+	packet.dataNum[0] = 0;
+	packet.dataNum[0] = numOfSuppressData/1000;
+	packet.dataNum[0] = (numOfSuppressData%1000)/100;
+	packet.dataNum[0] = (numOfSuppressData%100)/10;
+	packet.dataNum[0] = (numOfSuppressData%10)/1;
+
+	printf("\n\nsuppress data\n");
+	SUPPRESS_T *pValue = &gValue.suppress;
+
+	for(i=0; i<numOfSuppressData; i++){
+		packet.data[i] = pValue->todayValue[ HM_NUM.numOfN + i ];
+		//printf("%d", buffer[i]);
+	}
+
+	//an extra bit 6 between suppress data and checksum
+	packet.extra[0]=6;
+	//calculate checksum  2
+	printf("\n\nchecksum\n");
+	int checksum=0;
+	checksum = getDayChecksum(&packet.data[0],numOfSuppressData, timeBuffer );
+	printf("%d\n",checksum );
+	packet.checksum[0]= (checksum%100)>0 ? (checksum%100)/10 : 0;
+	packet.checksum[1]= (checksum%10)/1;
+
+	//next access time   14
+	//char nextAccexxTime[14] = {'2','0','1','8','1','2','2','1','1','8','3','0','5','5'};
+	for(i=0; i<NEXT_TIME_LEN;i++){
+		packet.nextTime[i] = pValue->nextAccessTime[i];
+	}
+
+	FILE *pFile = fopen(fileFullPath,"w");
+	if(pFile==NULL){
+		printf("open fail\n");
+		return ;
+	}
+	fwrite(&packet,sizeof(char),(TYPE_LEN + SCH_ID_LEN + PLANT_ID_LEN + TIME_LEN + DATA_NUM_LEN + numOfSuppressData),pFile);
+	fwrite(&packet.extra[0],sizeof(char),(EXTRA_BIT + CHECKSUM_LEN + NEXT_TIME_LEN),pFile);
+
+	fclose(pFile);
+}
+
+static inline void printItem(char* name,char * item,int len){
 	int i=0;
 	printf("%s ",name );
 	while(i<len){

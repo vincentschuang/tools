@@ -8,7 +8,24 @@
 		<script src="/js/html5.js">
 		</script>
 		<![endif]-->
-		<script src="/js/jquery.min.js"></script>	
+		<script src="/js/jquery.min.js"></script>
+		<style>
+		.button {
+			background-color: #565454;
+			border: none;
+			color: white;
+			padding: 8px 32px;
+			text-align: center;
+			text-decoration: none;
+			display: inline-block;
+			font-size: 16px;
+			margin: 4px 2px;
+			cursor: pointer;
+		}
+		.button:hover{
+			background-color:#8b8585;
+		}
+		</style>
 	</head>
 	<body>
 		<div id="wrap">
@@ -22,163 +39,219 @@
 			<hr>
 			<html>
 				<form action="/scheduleConfig" method="post" >
-					Month Value: <input type="text" name="monthValue" id="monthValue" value="100" size="10"><br>
-					Plant A: <br>00
-								<input type="text" name="ValueA" value="50" size="3">
-								<input type="text" name="ValueA" value="50" size="3">01
-								<input type="text" name="ValueA" value="50" size="3">
-								<input type="text" name="ValueA" value="50" size="3">02
-								<input type="text" name="ValueA" value="50" size="3">
-								<input type="text" name="ValueA" value="50" size="3">03
-								<input type="text" name="ValueA" value="50" size="3">
-								<input type="text" name="ValueA" value="50" size="3"><br><br>04
-								<input type="text" name="ValueA" value="50" size="3">
-								<input type="text" name="ValueA" value="50" size="3">05
-								<input type="text" name="ValueA" value="50" size="3">
-								<input type="text" name="ValueA" value="50" size="3">06
-								<input type="text" name="ValueA" value="50" size="3">
-								<input type="text" name="ValueA" value="50" size="3">07
-								<input type="text" name="ValueA" value="50" size="3">
-								<input type="text" name="ValueA" value="50" size="3"><br><br>08
-								<input type="text" name="ValueA" value="50" size="3">
-								<input type="text" name="ValueA" value="50" size="3">09
-								<input type="text" name="ValueA" value="50" size="3">
-								<input type="text" name="ValueA" value="50" size="3">10
-								<input type="text" name="ValueA" value="50" size="3">
-								<input type="text" name="ValueA" value="50" size="3">11
-								<input type="text" name="ValueA" value="50" size="3">
-								<input type="text" name="ValueA" value="50" size="3"><br><br>12
-								<input type="text" name="ValueA" value="50" size="3">
-								<input type="text" name="ValueA" value="50" size="3">13
-								<input type="text" name="ValueA" value="50" size="3">
-								<input type="text" name="ValueA" value="50" size="3">14
-								<input type="text" name="ValueA" value="50" size="3">
-								<input type="text" name="ValueA" value="50" size="3">15
-								<input type="text" name="ValueA" value="50" size="3">
-								<input type="text" name="ValueA" value="50" size="3"><br><br>16
-								<input type="text" name="ValueA" value="50" size="3">
-								<input type="text" name="ValueA" value="50" size="3">17
-								<input type="text" name="ValueA" value="50" size="3">
-								<input type="text" name="ValueA" value="50" size="3">18
-								<input type="text" name="ValueA" value="50" size="3">
-								<input type="text" name="ValueA" value="50" size="3">19
-								<input type="text" name="ValueA" value="50" size="3">
-								<input type="text" name="ValueA" value="50" size="3"><br><br>20
-								<input type="text" name="ValueA" value="50" size="3">
-								<input type="text" name="ValueA" value="50" size="3">21
-								<input type="text" name="ValueA" value="50" size="3">
-								<input type="text" name="ValueA" value="50" size="3">22
-								<input type="text" name="ValueA" value="50" size="3">
-								<input type="text" name="ValueA" value="50" size="3">23
-								<input type="text" name="ValueA" value="50" size="3">
-								<input type="text" name="ValueA" value="50" size="3">
+					Month Value: <input type="text" name="monthValue" id="monthValue" value="100" size="10"><br><br>
+					Some Day Value: <br>00
+								<input type="text" name="ValueE" value="87" size="3">
+								<input type="text" name="ValueE" value="87" size="3">01
+								<input type="text" name="ValueE" value="87" size="3">
+								<input type="text" name="ValueE" value="87" size="3">02
+								<input type="text" name="ValueE" value="87" size="3">
+								<input type="text" name="ValueE" value="87" size="3">03
+								<input type="text" name="ValueE" value="87" size="3">
+								<input type="text" name="ValueE" value="87" size="3"><br><br>04
+								<input type="text" name="ValueE" value="87" size="3">
+								<input type="text" name="ValueE" value="87" size="3">05
+								<input type="text" name="ValueE" value="87" size="3">
+								<input type="text" name="ValueE" value="87" size="3">06
+								<input type="text" name="ValueE" value="87" size="3">
+								<input type="text" name="ValueE" value="87" size="3">07
+								<input type="text" name="ValueE" value="87" size="3">
+								<input type="text" name="ValueE" value="87" size="3"><br><br>08
+								<input type="text" name="ValueE" value="87" size="3">
+								<input type="text" name="ValueE" value="87" size="3">09
+								<input type="text" name="ValueE" value="87" size="3">
+								<input type="text" name="ValueE" value="87" size="3">10
+								<input type="text" name="ValueE" value="87" size="3">
+								<input type="text" name="ValueE" value="87" size="3">11
+								<input type="text" name="ValueE" value="87" size="3">
+								<input type="text" name="ValueE" value="87" size="3"><br><br>12
+								<input type="text" name="ValueE" value="87" size="3">
+								<input type="text" name="ValueE" value="87" size="3">13
+								<input type="text" name="ValueE" value="87" size="3">
+								<input type="text" name="ValueE" value="87" size="3">14
+								<input type="text" name="ValueE" value="87" size="3">
+								<input type="text" name="ValueE" value="87" size="3">15
+								<input type="text" name="ValueE" value="87" size="3">
+								<input type="text" name="ValueE" value="87" size="3"><br><br>16
+								<input type="text" name="ValueE" value="87" size="3">
+								<input type="text" name="ValueE" value="87" size="3">17
+								<input type="text" name="ValueE" value="87" size="3">
+								<input type="text" name="ValueE" value="87" size="3">18
+								<input type="text" name="ValueE" value="87" size="3">
+								<input type="text" name="ValueE" value="87" size="3">19
+								<input type="text" name="ValueE" value="87" size="3">
+								<input type="text" name="ValueE" value="87" size="3"><br><br>20
+								<input type="text" name="ValueE" value="87" size="3">
+								<input type="text" name="ValueE" value="87" size="3">21
+								<input type="text" name="ValueE" value="87" size="3">
+								<input type="text" name="ValueE" value="87" size="3">22
+								<input type="text" name="ValueE" value="87" size="3">
+								<input type="text" name="ValueE" value="87" size="3">23
+								<input type="text" name="ValueE" value="87" size="3">
+								<input type="text" name="ValueE" value="87" size="3">
+								<br><br>Some Day: <input type="text" name="someDay" id="someDay" value="" size="8"><br>
+					<br><br>
+					Plan A: <br>00
+								<input type="text" name="ValueA" value="20" size="3">
+								<input type="text" name="ValueA" value="20" size="3">01
+								<input type="text" name="ValueA" value="20" size="3">
+								<input type="text" name="ValueA" value="20" size="3">02
+								<input type="text" name="ValueA" value="20" size="3">
+								<input type="text" name="ValueA" value="20" size="3">03
+								<input type="text" name="ValueA" value="20" size="3">
+								<input type="text" name="ValueA" value="20" size="3"><br><br>04
+								<input type="text" name="ValueA" value="20" size="3">
+								<input type="text" name="ValueA" value="20" size="3">05
+								<input type="text" name="ValueA" value="20" size="3">
+								<input type="text" name="ValueA" value="20" size="3">06
+								<input type="text" name="ValueA" value="20" size="3">
+								<input type="text" name="ValueA" value="20" size="3">07
+								<input type="text" name="ValueA" value="20" size="3">
+								<input type="text" name="ValueA" value="20" size="3"><br><br>08
+								<input type="text" name="ValueA" value="20" size="3">
+								<input type="text" name="ValueA" value="20" size="3">09
+								<input type="text" name="ValueA" value="20" size="3">
+								<input type="text" name="ValueA" value="20" size="3">10
+								<input type="text" name="ValueA" value="20" size="3">
+								<input type="text" name="ValueA" value="20" size="3">11
+								<input type="text" name="ValueA" value="20" size="3">
+								<input type="text" name="ValueA" value="20" size="3"><br><br>12
+								<input type="text" name="ValueA" value="20" size="3">
+								<input type="text" name="ValueA" value="20" size="3">13
+								<input type="text" name="ValueA" value="20" size="3">
+								<input type="text" name="ValueA" value="20" size="3">14
+								<input type="text" name="ValueA" value="20" size="3">
+								<input type="text" name="ValueA" value="20" size="3">15
+								<input type="text" name="ValueA" value="20" size="3">
+								<input type="text" name="ValueA" value="20" size="3"><br><br>16
+								<input type="text" name="ValueA" value="20" size="3">
+								<input type="text" name="ValueA" value="20" size="3">17
+								<input type="text" name="ValueA" value="20" size="3">
+								<input type="text" name="ValueA" value="20" size="3">18
+								<input type="text" name="ValueA" value="20" size="3">
+								<input type="text" name="ValueA" value="20" size="3">19
+								<input type="text" name="ValueA" value="20" size="3">
+								<input type="text" name="ValueA" value="20" size="3"><br><br>20
+								<input type="text" name="ValueA" value="20" size="3">
+								<input type="text" name="ValueA" value="20" size="3">21
+								<input type="text" name="ValueA" value="20" size="3">
+								<input type="text" name="ValueA" value="20" size="3">22
+								<input type="text" name="ValueA" value="20" size="3">
+								<input type="text" name="ValueA" value="20" size="3">23
+								<input type="text" name="ValueA" value="20" size="3">
+								<input type="text" name="ValueA" value="20" size="3">
 								<br><br>Next Access Time: <input type="text" name="nextAccessTimeA" id="nextAccessTimeA" value="" size="15"><br>
-					<br><br>Plant B: <br>00
-								<input type="text" name="ValueB" value="50" size="3">
-								<input type="text" name="ValueB" value="50" size="3">01
-								<input type="text" name="ValueB" value="50" size="3">
-								<input type="text" name="ValueB" value="50" size="3">02
-								<input type="text" name="ValueB" value="50" size="3">
-								<input type="text" name="ValueB" value="50" size="3">03
-								<input type="text" name="ValueB" value="50" size="3">
-								<input type="text" name="ValueB" value="50" size="3"><br><br>04
-								<input type="text" name="ValueB" value="50" size="3">
-								<input type="text" name="ValueB" value="50" size="3">05
-								<input type="text" name="ValueB" value="50" size="3">
-								<input type="text" name="ValueB" value="50" size="3">06
-								<input type="text" name="ValueB" value="50" size="3">
-								<input type="text" name="ValueB" value="50" size="3">07
-								<input type="text" name="ValueB" value="50" size="3">
-								<input type="text" name="ValueB" value="50" size="3"><br><br>08
-								<input type="text" name="ValueB" value="50" size="3">
-								<input type="text" name="ValueB" value="50" size="3">09
-								<input type="text" name="ValueB" value="50" size="3">
-								<input type="text" name="ValueB" value="50" size="3">10
-								<input type="text" name="ValueB" value="50" size="3">
-								<input type="text" name="ValueB" value="50" size="3">11
-								<input type="text" name="ValueB" value="50" size="3">
-								<input type="text" name="ValueB" value="50" size="3"><br><br>12
-								<input type="text" name="ValueB" value="50" size="3">
-								<input type="text" name="ValueB" value="50" size="3">13
-								<input type="text" name="ValueB" value="50" size="3">
-								<input type="text" name="ValueB" value="50" size="3">14
-								<input type="text" name="ValueB" value="50" size="3">
-								<input type="text" name="ValueB" value="50" size="3">15
-								<input type="text" name="ValueB" value="50" size="3">
-								<input type="text" name="ValueB" value="50" size="3"><br><br>16
-								<input type="text" name="ValueB" value="50" size="3">
-								<input type="text" name="ValueB" value="50" size="3">17
-								<input type="text" name="ValueB" value="50" size="3">
-								<input type="text" name="ValueB" value="50" size="3">18
-								<input type="text" name="ValueB" value="50" size="3">
-								<input type="text" name="ValueB" value="50" size="3">19
-								<input type="text" name="ValueB" value="50" size="3">
-								<input type="text" name="ValueB" value="50" size="3"><br><br>20
-								<input type="text" name="ValueB" value="50" size="3">
-								<input type="text" name="ValueB" value="50" size="3">21
-								<input type="text" name="ValueB" value="50" size="3">
-								<input type="text" name="ValueB" value="50" size="3">22
-								<input type="text" name="ValueB" value="50" size="3">
-								<input type="text" name="ValueB" value="50" size="3">23
-								<input type="text" name="ValueB" value="50" size="3">
-								<input type="text" name="ValueB" value="50" size="3">
+								<input type="button" name="setToNullA" id="setToNullA" value="Clear Plan A" onclick="setToNull('A')">
+					<br><br>Plan B: <br>00
+								<input type="text" name="ValueB" value="100" size="3">
+								<input type="text" name="ValueB" value="100" size="3">01
+								<input type="text" name="ValueB" value="100" size="3">
+								<input type="text" name="ValueB" value="100" size="3">02
+								<input type="text" name="ValueB" value="100" size="3">
+								<input type="text" name="ValueB" value="100" size="3">03
+								<input type="text" name="ValueB" value="100" size="3">
+								<input type="text" name="ValueB" value="100" size="3"><br><br>04
+								<input type="text" name="ValueB" value="100" size="3">
+								<input type="text" name="ValueB" value="100" size="3">05
+								<input type="text" name="ValueB" value="100" size="3">
+								<input type="text" name="ValueB" value="100" size="3">06
+								<input type="text" name="ValueB" value="100" size="3">
+								<input type="text" name="ValueB" value="100" size="3">07
+								<input type="text" name="ValueB" value="100" size="3">
+								<input type="text" name="ValueB" value="100" size="3"><br><br>08
+								<input type="text" name="ValueB" value="100" size="3">
+								<input type="text" name="ValueB" value="100" size="3">09
+								<input type="text" name="ValueB" value="100" size="3">
+								<input type="text" name="ValueB" value="100" size="3">10
+								<input type="text" name="ValueB" value="100" size="3">
+								<input type="text" name="ValueB" value="100" size="3">11
+								<input type="text" name="ValueB" value="100" size="3">
+								<input type="text" name="ValueB" value="100" size="3"><br><br>12
+								<input type="text" name="ValueB" value="100" size="3">
+								<input type="text" name="ValueB" value="100" size="3">13
+								<input type="text" name="ValueB" value="100" size="3">
+								<input type="text" name="ValueB" value="100" size="3">14
+								<input type="text" name="ValueB" value="100" size="3">
+								<input type="text" name="ValueB" value="100" size="3">15
+								<input type="text" name="ValueB" value="100" size="3">
+								<input type="text" name="ValueB" value="100" size="3"><br><br>16
+								<input type="text" name="ValueB" value="100" size="3">
+								<input type="text" name="ValueB" value="100" size="3">17
+								<input type="text" name="ValueB" value="100" size="3">
+								<input type="text" name="ValueB" value="100" size="3">18
+								<input type="text" name="ValueB" value="100" size="3">
+								<input type="text" name="ValueB" value="100" size="3">19
+								<input type="text" name="ValueB" value="100" size="3">
+								<input type="text" name="ValueB" value="100" size="3"><br><br>20
+								<input type="text" name="ValueB" value="100" size="3">
+								<input type="text" name="ValueB" value="100" size="3">21
+								<input type="text" name="ValueB" value="100" size="3">
+								<input type="text" name="ValueB" value="100" size="3">22
+								<input type="text" name="ValueB" value="100" size="3">
+								<input type="text" name="ValueB" value="100" size="3">23
+								<input type="text" name="ValueB" value="100" size="3">
+								<input type="text" name="ValueB" value="100" size="3">
 								<br><br>Next Access Time: <input type="text" name="nextAccessTimeB" id="nextAccessTimeB" value="" size="15"><br>
-					<br><br>Plant C: <br>00
-								<input type="text" name="ValueC" value="50" size="3">
-								<input type="text" name="ValueC" value="50" size="3">01
-								<input type="text" name="ValueC" value="50" size="3">
-								<input type="text" name="ValueC" value="50" size="3">02
-								<input type="text" name="ValueC" value="50" size="3">
-								<input type="text" name="ValueC" value="50" size="3">03
-								<input type="text" name="ValueC" value="50" size="3">
-								<input type="text" name="ValueC" value="50" size="3"><br><br>04
-								<input type="text" name="ValueC" value="50" size="3">
-								<input type="text" name="ValueC" value="50" size="3">05
-								<input type="text" name="ValueC" value="50" size="3">
-								<input type="text" name="ValueC" value="50" size="3">06
-								<input type="text" name="ValueC" value="50" size="3">
-								<input type="text" name="ValueC" value="50" size="3">07
-								<input type="text" name="ValueC" value="50" size="3">
-								<input type="text" name="ValueC" value="50" size="3"><br><br>08
-								<input type="text" name="ValueC" value="50" size="3">
-								<input type="text" name="ValueC" value="50" size="3">09
-								<input type="text" name="ValueC" value="50" size="3">
-								<input type="text" name="ValueC" value="50" size="3">10
-								<input type="text" name="ValueC" value="50" size="3">
-								<input type="text" name="ValueC" value="50" size="3">11
-								<input type="text" name="ValueC" value="50" size="3">
-								<input type="text" name="ValueC" value="50" size="3"><br><br>12
-								<input type="text" name="ValueC" value="50" size="3">
-								<input type="text" name="ValueC" value="50" size="3">13
-								<input type="text" name="ValueC" value="50" size="3">
-								<input type="text" name="ValueC" value="50" size="3">14
-								<input type="text" name="ValueC" value="50" size="3">
-								<input type="text" name="ValueC" value="50" size="3">15
-								<input type="text" name="ValueC" value="50" size="3">
-								<input type="text" name="ValueC" value="50" size="3"><br><br>16
-								<input type="text" name="ValueC" value="50" size="3">
-								<input type="text" name="ValueC" value="50" size="3">17
-								<input type="text" name="ValueC" value="50" size="3">
-								<input type="text" name="ValueC" value="50" size="3">18
-								<input type="text" name="ValueC" value="50" size="3">
-								<input type="text" name="ValueC" value="50" size="3">19
-								<input type="text" name="ValueC" value="50" size="3">
-								<input type="text" name="ValueC" value="50" size="3"><br><br>20
-								<input type="text" name="ValueC" value="50" size="3">
-								<input type="text" name="ValueC" value="50" size="3">21
-								<input type="text" name="ValueC" value="50" size="3">
-								<input type="text" name="ValueC" value="50" size="3">22
-								<input type="text" name="ValueC" value="50" size="3">
-								<input type="text" name="ValueC" value="50" size="3">23
-								<input type="text" name="ValueC" value="50" size="3">
-								<input type="text" name="ValueC" value="50" size="3">
+								<input type="button" name="setToNullB" id="setToNullB" value="Clear PlanB" onclick="setToNull('B')">
+					<br><br>Plan C: <br>00
+								<input type="text" name="ValueC" value="0" size="3">
+								<input type="text" name="ValueC" value="0" size="3">01
+								<input type="text" name="ValueC" value="0" size="3">
+								<input type="text" name="ValueC" value="0" size="3">02
+								<input type="text" name="ValueC" value="0" size="3">
+								<input type="text" name="ValueC" value="0" size="3">03
+								<input type="text" name="ValueC" value="0" size="3">
+								<input type="text" name="ValueC" value="0" size="3"><br><br>04
+								<input type="text" name="ValueC" value="0" size="3">
+								<input type="text" name="ValueC" value="0" size="3">05
+								<input type="text" name="ValueC" value="0" size="3">
+								<input type="text" name="ValueC" value="0" size="3">06
+								<input type="text" name="ValueC" value="0" size="3">
+								<input type="text" name="ValueC" value="0" size="3">07
+								<input type="text" name="ValueC" value="0" size="3">
+								<input type="text" name="ValueC" value="0" size="3"><br><br>08
+								<input type="text" name="ValueC" value="0" size="3">
+								<input type="text" name="ValueC" value="0" size="3">09
+								<input type="text" name="ValueC" value="0" size="3">
+								<input type="text" name="ValueC" value="0" size="3">10
+								<input type="text" name="ValueC" value="0" size="3">
+								<input type="text" name="ValueC" value="0" size="3">11
+								<input type="text" name="ValueC" value="0" size="3">
+								<input type="text" name="ValueC" value="0" size="3"><br><br>12
+								<input type="text" name="ValueC" value="0" size="3">
+								<input type="text" name="ValueC" value="0" size="3">13
+								<input type="text" name="ValueC" value="0" size="3">
+								<input type="text" name="ValueC" value="0" size="3">14
+								<input type="text" name="ValueC" value="0" size="3">
+								<input type="text" name="ValueC" value="0" size="3">15
+								<input type="text" name="ValueC" value="0" size="3">
+								<input type="text" name="ValueC" value="0" size="3"><br><br>16
+								<input type="text" name="ValueC" value="0" size="3">
+								<input type="text" name="ValueC" value="0" size="3">17
+								<input type="text" name="ValueC" value="0" size="3">
+								<input type="text" name="ValueC" value="0" size="3">18
+								<input type="text" name="ValueC" value="0" size="3">
+								<input type="text" name="ValueC" value="0" size="3">19
+								<input type="text" name="ValueC" value="0" size="3">
+								<input type="text" name="ValueC" value="0" size="3"><br><br>20
+								<input type="text" name="ValueC" value="0" size="3">
+								<input type="text" name="ValueC" value="0" size="3">21
+								<input type="text" name="ValueC" value="0" size="3">
+								<input type="text" name="ValueC" value="0" size="3">22
+								<input type="text" name="ValueC" value="0" size="3">
+								<input type="text" name="ValueC" value="0" size="3">23
+								<input type="text" name="ValueC" value="0" size="3">
+								<input type="text" name="ValueC" value="0" size="3">
 					<br><br>Next Access Time: <input type="text" name="nextAccessTimeC" id="nextAccessTimeC" value="" size="15"><br>
-					<br>Using Plan: 
-								A:<input type="radio" name="plan" id="planA" value="A" checked="true">
-								B:<input type="radio" name="plan" id="planB" value="B">
-								C:<input type="radio" name="plan" id="planC" value="C">
-					<input type="button" value="Set" onclick="set()">
+					<input type="button" name="setToNullC" id="setToNullC" value="Clear PlanC" onclick="setToNull('C')">
+					<br>Using Plan: <br>
+								A:<input type="radio" name="plan" id="planA" value="A" checked="true"><br>
+								B:<input type="radio" name="plan" id="planB" value="B"><br>
+								C:<input type="radio" name="plan" id="planC" value="C"><br>
+					<input type="button" value="Set" class="button" onclick="set()">
 				</form>
+
+
 
 				<!--h1>Register</h1>
 				<form action="/scheduleSend" method="post" >
@@ -201,9 +274,11 @@
 					schedule_kbn: <input type="text" name="schedule_kbn" value="1812" size="5"><br>
 					<input type="submit" value="Submit">
 				</form-->
+
+
 				<br><br>
 				<input type="button" value="Get Current Config in System" onclick="get()">
-				<br>
+				<br><br>
 				Month Value: <input type="text" name="monthValue" id="monthValueD" value="" size="10"><br>
 				<br>00
 								<input type="text" name="ValueD" value="" size="3">
@@ -274,6 +349,11 @@
 				document.getElementById('nextAccessTimeB').value = time_str;
 				document.getElementById('nextAccessTimeC').value = time_str;
 
+				var dmonth = (d.getMonth()+2)%12;
+				dmonth = (dmonth>9?dmonth:"0"+dmonth);
+				var day_str = year.toString() + dmonth.toString() + ndate.toString();
+				document.getElementById('someDay').value = day_str;
+
 				console.log(time_str);
 				
 			</script>
@@ -295,13 +375,28 @@
 					var post_string="todayValue=";
 					for(var i=0, length = values.length; i<length; i++)
 					{
-						post_string+=values[i].value+",";
+						if(values[i].value==''){
+							post_string+="n,";
+						}else{
+							post_string+=values[i].value+",";
+						}
 					}
 
 					var nextAccessTime = "nextAccessTime"+plan;
 					post_string+="&nextAccessTime="+document.getElementById(nextAccessTime).value;
 					post_string+="&monthValue="+document.getElementById('monthValue').value;
-				    monthValue
+				    
+					var selectValue = "ValueE";
+					var values = document.getElementsByName(selectValue);
+
+					post_string+="&somedayValue=";
+					for(var i=0, length = values.length; i<length; i++)
+					{
+						post_string+=values[i].value+",";
+					}
+
+					var someDay = "someDay";
+					post_string+="&someDay="+document.getElementById(someDay).value;
 
 				    $.ajaxSetup({ cache: false });
 				    var obj = {
@@ -337,9 +432,24 @@
 					var todayValue = obj.todayValue;
 					var len= todayValue.length;
 					for(var i=0;i<len;i++){
-						objTodayValue[i].value = todayValue[i];
+						if(todayValue[i] == 110){
+							objTodayValue[i].value = '';
+						}else{
+							objTodayValue[i].value = todayValue[i];
+						}
+						
 					}
 				}
+
+				function setToNull(Section){
+					var name = "Value"+Section;
+					var all = document.getElementsByName(name);
+					var len = all.length;
+					for (var i = 0; i < len; i++) {
+						all[i].value = "";
+					}
+				}
+
 			</script>
 		</div>
 	</body>
