@@ -42,7 +42,7 @@
 #define write_to_header(string_to_write) strcpy(process->buf + strlen(process->buf), string_to_write)
 
 struct server_config gServerConfig;
-DEFINE_HASHTABLE(htable, 4);
+
 
 int setNonblocking ( int fd )
 {
@@ -499,7 +499,7 @@ void handle_event ( int sock )
     {
         /*Get process by hash Table*/
 	    struct process* process;
-	    hash_for_each_possible(htable, process, node, sock) {
+	    hash_for_each_possible(gServerConfig.htable, process, node, sock) {
 	        if(process->sock == sock) {
 	            break;
 	        }
@@ -582,7 +582,7 @@ void accept_sock ( int listen_sock )
         process->fd = NO_FILE;
         process->status = STATUS_READ_REQUEST_HEADER;
         //printf("add Socket %d\n",infd );
-        hash_add(htable, &process->node, process->sock);
+        hash_add(gServerConfig.htable, &process->node, process->sock);
         gServerConfig.current_total_processes++;
     }
 }

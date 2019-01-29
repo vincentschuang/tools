@@ -14,7 +14,7 @@ struct server_config {
     int efd;
  	int listen_sock;
  	int current_total_processes;
- 	struct hlist_head * htable;
+ 	DECLARE_HASHTABLE(htable, 8);
  	char *index_root;
 };
 
